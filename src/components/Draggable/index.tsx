@@ -1,9 +1,10 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { useAppContext } from '../../context/appContext';
 import { Dots } from '../../assets';
 import { animated, useSpring } from 'react-spring';
 import { useDrag } from '@use-gesture/react';
+import { calculateDistance } from '../../utils';
 
 type IDraggableProps = React.PropsWithChildren;
 
@@ -12,25 +13,47 @@ function Draggable(props: IDraggableProps) {
   const _ref = useRef<HTMLDivElement>(null);
 
   const [{ x, y }, api] = useSpring(() => ({ x: 0, y: 0 }));
+  const isColliding = () => {
+    const left = ctx?.leftRef.current.getBoundingClientRect();
+    const right = ctx?.rightRef.current.getBoundingClientRect();
 
-  const bind = useDrag(({ down, event, movement: [mx, my], ...props }) => {
+    const draggable = (_ref.current as HTMLDivElement).getBoundingClientRect();
+
+    // Check for collision
+    const isCloseToLeft = calculateDistance(
+      draggable.x,
+      draggable.y,
+      left.x,
+      left.y
+    );
+
+    const isCloseToRight = calculateDistance(
+      draggable.x,
+      draggable.y,
+      right.x,
+      right.y
+    );
+
+    return isCloseToLeft < isCloseToRight ? 'left' : 'right';
+  };
+
+  const bind = useDrag(({ down, event, movement: [mx, my] }) => {
     event.stopPropagation();
 
     api.start({ x: down ? mx : 0, y: down ? my : 0, immediate: down });
 
     if (down) {
-      ctx?.handleOnDragItem(_ref.current as HTMLDivElement);
+      ctx?.handleOnDragItem((_ref.current?.children[1] as HTMLDivElement).id);
+      console.log((_ref.current?.children[1] as HTMLInputElement).value);
     } else {
-      if (ctx?.isOver) {
-        console.log(ctx.isOver);
-        (_ref.current as HTMLDivElement).parentElement?.removeChild(
-          _ref.current as HTMLDivElement
-        );
-        ctx.isOver.appendChild(_ref.current as Node);
-      }
       setTimeout(() => {
+        const target =
+          isColliding() === 'left' ? 'left_dropzone' : 'right_dropzone';
+        ctx?.handleMoveInput({
+          id: ctx?.draggingItem as string,
+          target: target,
+        });
         ctx?.handleOnDragItem(null);
-        ctx?.handleIsOver(null);
       }, 0);
     }
   });

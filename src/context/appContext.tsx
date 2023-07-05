@@ -1,10 +1,4 @@
-import React, {
-  ChangeEvent,
-  createRef,
-  useCallback,
-  useEffect,
-  useState,
-} from 'react';
+import React, { ChangeEvent, createRef, useCallback, useState } from 'react';
 import useWindowSize from '../hooks/useWindowSize';
 import Draggable from '../components/Draggable';
 
@@ -17,17 +11,20 @@ export interface IAppContext {
   isDesktop: boolean;
   leftRef: any;
   rightRef: any;
-  draggingItem: HTMLDivElement | null;
-  handleOnDragItem: (element: HTMLDivElement | null) => void;
-  elements: Array<IElementType>;
-  handleElementChange: (fn: React.SetStateAction<IElementType[]>) => void;
-  isOver: HTMLDivElement | null;
-  handleIsOver: (v: HTMLDivElement | null) => void;
+  draggingItem: string | null;
+  handleOnDragItem: (element: string | null) => void;
+  isOver: string | null;
+  handleIsOver: (v: string | null) => void;
+  handleCreateInput: (v: IInputType) => void;
+  inputs: Array<IInputType>;
+  handleInputChange: (obj: Pick<IInputType, 'id' | 'value'>) => void;
+  handleMoveInput: (obj: Pick<IInputType, 'id' | 'target'>) => void;
 }
 
-interface IElementType {
-  items: React.ReactNode[];
+interface IInputType {
   target: string;
+  value: string;
+  id: string;
 }
 
 const AppContext = React.createContext<IAppContext | undefined>(undefined);
@@ -39,68 +36,80 @@ function AppContextProvider({ children }: IAppProviderProps) {
   const isMobile = useWindowSize(768);
   const isDesktop = useWindowSize(1920);
 
-  const [draggingItem, setDraggingItem] = useState<HTMLDivElement | null>(null);
-  const [text, setText] = useState<string>('');
-  const [checked, setChecked] = useState<boolean>(false);
-  const [isOver, setIsOver] = useState<HTMLDivElement | null>(null);
+  const [draggingItem, setDraggingItem] = useState<string | null>(null);
+  const [isOver, setIsOver] = useState<string | null>(null);
 
-  const handleOnDragItem = useCallback((element: HTMLDivElement | null) => {
+  /**
+   *
+   * inputs data type:
+   * {
+   *  target: string (dropzone id)
+   *  value: ""
+   *  id: ""
+   * }
+   *
+   */
+
+  const [inputs, setInputs] = useState<Array<IInputType>>([]);
+
+  const handleCreateInput = useCallback(
+    (obj: IInputType) => {
+      console.log(obj);
+      setInputs((prev) => [...prev, obj]);
+    },
+    [inputs]
+  );
+
+  const handleInputChange = useCallback(
+    (obj: Pick<IInputType, 'id' | 'value'>) => {
+      const input = inputs.filter((_input) => _input.id === obj.id);
+      console.log(input);
+
+      if (input) {
+        setInputs((prev) => {
+          const newArray = [...prev];
+          const i = prev.indexOf(input[0]);
+          input[0].value = obj.value;
+          newArray[i] = input[0];
+
+          return newArray;
+        });
+      }
+    },
+    [inputs]
+  );
+
+  const handleMoveInput = useCallback(
+    (obj: Pick<IInputType, 'id' | 'target'>) => {
+      const input = inputs.filter((_input) => _input.id === obj.id);
+
+      if (input) {
+        setInputs((prev) => {
+          const newArray = [...prev];
+          const i = prev.indexOf(input[0]);
+          if (input[0].target !== obj.target) {
+            input[0].target = obj.target;
+            newArray.splice(i, 1);
+            newArray.push(input[0]);
+            return newArray;
+          }
+          input[0].target = obj.target;
+          newArray[i] = input[0];
+
+          return newArray;
+        });
+      }
+    },
+    [inputs]
+  );
+
+  const handleOnDragItem = useCallback((element: string | null) => {
     setDraggingItem(element);
   }, []);
 
-  const handleTextChange = useCallback((v: ChangeEvent<HTMLInputElement>) => {
-    setText(v.target.value);
-  }, []);
-
-  const handleCheckChange = useCallback((v: ChangeEvent<HTMLInputElement>) => {
-    setText(v.target.value);
-  }, []);
-
-  const handleIsOver = useCallback((v: HTMLDivElement | null) => {
+  const handleIsOver = useCallback((v: string | null) => {
     setIsOver(v);
   }, []);
-
-  handleIsOver;
-
-  const [elements, setElements] = useState<Array<IElementType>>([
-    {
-      items: [
-        <Draggable>
-          <div>
-            <input
-              type="checkbox"
-              id="scales"
-              name="scales"
-              checked={checked}
-              onChange={handleCheckChange}
-            />
-            <label htmlFor="scales">Scales</label>
-          </div>
-        </Draggable>,
-      ],
-      target: 'left_dropzone',
-    },
-    {
-      items: [
-        <Draggable>
-          <input
-            type="text"
-            placeholder="Type something..."
-            value={text}
-            onChange={handleTextChange}
-          />
-        </Draggable>,
-      ],
-      target: 'right_dropzone',
-    },
-  ]);
-
-  const handleElementChange = useCallback(
-    (fn: React.SetStateAction<IElementType[]>) => {
-      setElements(fn);
-    },
-    []
-  );
 
   const leftRef = createRef<HTMLDivElement>();
   const rightRef = createRef<HTMLDivElement>();
@@ -114,10 +123,12 @@ function AppContextProvider({ children }: IAppProviderProps) {
         rightRef,
         draggingItem,
         handleOnDragItem,
-        elements,
-        handleElementChange,
         isOver,
         handleIsOver,
+        handleCreateInput,
+        inputs,
+        handleMoveInput,
+        handleInputChange,
       }}
     >
       {children}

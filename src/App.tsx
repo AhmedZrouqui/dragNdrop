@@ -24,17 +24,7 @@ function App() {
           }
         )}
       >
-        <Dropzone ref={ctx && ctx.leftRef} id="left_dropzone">
-          <Draggable>
-            <input
-              className="z-10"
-              type="text"
-              placeholder="Type something..."
-              value={text}
-              onChange={handleTextChange}
-            />
-          </Draggable>
-        </Dropzone>
+        <Dropzone ref={ctx && ctx.leftRef} id="left_dropzone"></Dropzone>
         <Dropzone ref={ctx && ctx.rightRef} id="right_dropzone"></Dropzone>
       </div>
     </Layout>
