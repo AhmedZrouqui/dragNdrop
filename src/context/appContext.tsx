@@ -6,42 +6,18 @@ import {
   useContext,
 } from 'react';
 import useWindowSize from '../hooks/useWindowSize';
-import { ITableType } from '../types';
+import { IAppContext, IInputType, ITableType } from '../types';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IAppProviderProps extends React.PropsWithChildren {}
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface IAppContext {
-  isMobile: boolean;
-  isDesktop: boolean;
-  leftRef: any;
-  rightRef: any;
-  isOver: string | null;
-  handleIsOver: (v: string | null) => void;
-  handleCreateInput: (v: IInputType) => void;
-  inputs: Array<IInputType>;
-  handleInputChange: (obj: Pick<IInputType, 'id' | 'value'>) => void;
-  handleMoveInput: (obj: Pick<IInputType, 'id' | 'target'>) => void;
-  getRightSideData: () => ITableType[];
-}
-
-interface IInputType {
-  target: string;
-  value: string;
-  id: string;
-}
-
 const AppContext = createContext<IAppContext | undefined>(undefined);
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAppContext = () => useContext(AppContext);
 
 function AppContextProvider({ children }: IAppProviderProps) {
   const isMobile = useWindowSize(768);
   const isDesktop = useWindowSize(1920);
-
-  const [isOver, setIsOver] = useState<string | null>(null);
 
   /**
    *
@@ -56,9 +32,30 @@ function AppContextProvider({ children }: IAppProviderProps) {
 
   const [inputs, setInputs] = useState<Array<IInputType>>([]);
 
+  //refs
+  const leftRef = createRef<HTMLDivElement>();
+  const rightRef = createRef<HTMLDivElement>();
+
+  /**
+   * @param Object
+   *
+   * takes an `object` and add it to the inputs array.
+   * objects will be rendered as <input /> later on.
+   *
+   * @returns void
+   */
+
   const handleCreateInput = useCallback((obj: IInputType) => {
     setInputs((prev) => [...prev, obj]);
   }, []);
+
+  /**
+   * @param Object
+   *
+   * takes an `object` and mutates the target input if found
+   *
+   * @returns void
+   */
 
   const handleInputChange = useCallback(
     (obj: Pick<IInputType, 'id' | 'value'>) => {
@@ -76,6 +73,15 @@ function AppContextProvider({ children }: IAppProviderProps) {
     },
     [inputs]
   );
+
+  /**
+   * @param Object
+   *
+   * takes an `object` and moves it to
+   * the passed target (dropzone id).
+   *
+   * @returns void
+   */
 
   const handleMoveInput = useCallback(
     (obj: Pick<IInputType, 'id' | 'target'>) => {
@@ -108,12 +114,14 @@ function AppContextProvider({ children }: IAppProviderProps) {
     [inputs]
   );
 
-  const handleIsOver = useCallback((v: string | null) => {
-    setIsOver(v);
-  }, []);
-
-  const leftRef = createRef<HTMLDivElement>();
-  const rightRef = createRef<HTMLDivElement>();
+  /**
+   * @param Object
+   *
+   * filters `inputs` and returns these at the right
+   * dropzone alongside their values.
+   *
+   * @returns Array of objects
+   */
 
   const getRightSideData = useCallback(() => {
     const data = inputs.filter((input) =>
@@ -137,8 +145,6 @@ function AppContextProvider({ children }: IAppProviderProps) {
         isDesktop,
         leftRef,
         rightRef,
-        isOver,
-        handleIsOver,
         handleCreateInput,
         inputs,
         handleMoveInput,
