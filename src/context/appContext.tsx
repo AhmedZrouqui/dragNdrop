@@ -1,6 +1,12 @@
-import React, { ChangeEvent, createRef, useCallback, useState } from 'react';
+import {
+  createRef,
+  useCallback,
+  useState,
+  createContext,
+  useContext,
+} from 'react';
 import useWindowSize from '../hooks/useWindowSize';
-import Draggable from '../components/Draggable';
+import { ITableType } from '../types';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IAppProviderProps extends React.PropsWithChildren {}
@@ -11,14 +17,13 @@ export interface IAppContext {
   isDesktop: boolean;
   leftRef: any;
   rightRef: any;
-  draggingItem: string | null;
-  handleOnDragItem: (element: string | null) => void;
   isOver: string | null;
   handleIsOver: (v: string | null) => void;
   handleCreateInput: (v: IInputType) => void;
   inputs: Array<IInputType>;
   handleInputChange: (obj: Pick<IInputType, 'id' | 'value'>) => void;
   handleMoveInput: (obj: Pick<IInputType, 'id' | 'target'>) => void;
+  getRightSideData: () => ITableType[];
 }
 
 interface IInputType {
@@ -27,16 +32,15 @@ interface IInputType {
   id: string;
 }
 
-const AppContext = React.createContext<IAppContext | undefined>(undefined);
+const AppContext = createContext<IAppContext | undefined>(undefined);
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const useAppContext = () => React.useContext(AppContext);
+export const useAppContext = () => useContext(AppContext);
 
 function AppContextProvider({ children }: IAppProviderProps) {
   const isMobile = useWindowSize(768);
   const isDesktop = useWindowSize(1920);
 
-  const [draggingItem, setDraggingItem] = useState<string | null>(null);
   const [isOver, setIsOver] = useState<string | null>(null);
 
   /**
@@ -52,19 +56,13 @@ function AppContextProvider({ children }: IAppProviderProps) {
 
   const [inputs, setInputs] = useState<Array<IInputType>>([]);
 
-  const handleCreateInput = useCallback(
-    (obj: IInputType) => {
-      console.log(obj);
-      setInputs((prev) => [...prev, obj]);
-    },
-    [inputs]
-  );
+  const handleCreateInput = useCallback((obj: IInputType) => {
+    setInputs((prev) => [...prev, obj]);
+  }, []);
 
   const handleInputChange = useCallback(
     (obj: Pick<IInputType, 'id' | 'value'>) => {
       const input = inputs.filter((_input) => _input.id === obj.id);
-      console.log(input);
-
       if (input) {
         setInputs((prev) => {
           const newArray = [...prev];
@@ -85,14 +83,21 @@ function AppContextProvider({ children }: IAppProviderProps) {
 
       if (input) {
         setInputs((prev) => {
+          //store prev state in new array
           const newArray = [...prev];
+
+          //get moved object's index
           const i = prev.indexOf(input[0]);
+
+          //if object is dropped in different drop zone
           if (input[0].target !== obj.target) {
             input[0].target = obj.target;
             newArray.splice(i, 1);
             newArray.push(input[0]);
             return newArray;
           }
+
+          //else we put it on the same index
           input[0].target = obj.target;
           newArray[i] = input[0];
 
@@ -103,16 +108,27 @@ function AppContextProvider({ children }: IAppProviderProps) {
     [inputs]
   );
 
-  const handleOnDragItem = useCallback((element: string | null) => {
-    setDraggingItem(element);
-  }, []);
-
   const handleIsOver = useCallback((v: string | null) => {
     setIsOver(v);
   }, []);
 
   const leftRef = createRef<HTMLDivElement>();
   const rightRef = createRef<HTMLDivElement>();
+
+  const getRightSideData = useCallback(() => {
+    const data = inputs.filter((input) =>
+      input.target.toLowerCase().includes('right')
+    );
+
+    if (!data) {
+      return [];
+    }
+
+    return data.map((input) => ({
+      id: input.id,
+      value: input.value,
+    })) as ITableType[];
+  }, [inputs]);
 
   return (
     <AppContext.Provider
@@ -121,14 +137,13 @@ function AppContextProvider({ children }: IAppProviderProps) {
         isDesktop,
         leftRef,
         rightRef,
-        draggingItem,
-        handleOnDragItem,
         isOver,
         handleIsOver,
         handleCreateInput,
         inputs,
         handleMoveInput,
         handleInputChange,
+        getRightSideData,
       }}
     >
       {children}

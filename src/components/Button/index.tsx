@@ -1,18 +1,24 @@
-import React from 'react';
-import useWindowSize from '../../hooks/useWindowSize';
 import classNames from 'classnames';
 import { useAppContext } from '../../context/appContext';
 
-function Button() {
+interface IButtonProps {
+  handler: () => void;
+}
+
+function Button(props: IButtonProps) {
   const ctx = useAppContext();
 
   return (
     <button
-      className={classNames('bg-primary text-white px-5 rounded-lg', {
-        'w-full': ctx?.isMobile,
-      })}
+      onClick={props.handler}
+      className={classNames(
+        'bg-primary text-white p-4 min-w-[350px] rounded-lg shadow-default',
+        {
+          'w-full': ctx?.isMobile,
+        }
+      )}
     >
-      Save
+      <span>Save</span>
     </button>
   );
 }

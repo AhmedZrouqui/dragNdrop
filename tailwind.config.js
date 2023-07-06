@@ -12,7 +12,8 @@ export default {
         primary: "#0C4A6E"
       },
       boxShadow: {
-        "default": "0px 4px 4px 0px rgba(0, 0, 0, 0.10)"
+        "default": "0px 4px 4px 0px rgba(0, 0, 0, 0.10)",
+        "primary": "0px 4px 4px 0px rgba(12, 74, 110, .10)"
       }
     },
   },

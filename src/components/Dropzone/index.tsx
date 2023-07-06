@@ -9,20 +9,7 @@ interface IDropzoneProps extends React.PropsWithChildren {
 }
 
 const Dropzone = forwardRef<HTMLDivElement, IDropzoneProps>((props, ref) => {
-  /*const bind = useHover(({ ...props }) => {
-    //console.log(props);
-  });*/
-
   const ctx = useAppContext();
-
-  /*const handleDrop = (e: any) => {
-    if (ctx?.draggingItem) {
-      console.log(ctx?.draggingItem);
-      (e.target as HTMLDivElement).appendChild(
-        ctx?.draggingItem as HTMLDivElement
-      );
-    }
-  };*/
 
   const handleInputCreate = () => {
     ctx?.handleCreateInput({
@@ -30,31 +17,40 @@ const Dropzone = forwardRef<HTMLDivElement, IDropzoneProps>((props, ref) => {
       target: props.id,
       value: '',
     });
-    console.log(ctx?.inputs.filter((input) => input.id === props.id));
   };
 
   return (
     <div
       id={props.id}
-      //{...bind()}
       className={classNames(
         'bg-darkGray w-[350px] h-[450px] rounded-lg shadow-default p-4 flex rel flex-col gap-2',
         {
           //'bg-opacity-50': isOver,
+          'w-full h-[300px]': ctx?.isMobile,
         }
       )}
       ref={ref}
     >
-      <button onClick={handleInputCreate}>create input</button>
+      <button
+        role="button"
+        onClick={handleInputCreate}
+        className="py-2 select-none rounded-md text-white bg-paper text-sm hover:shadow-default transition-all ease-in-out transition-300"
+      >
+        Add Input
+      </button>
+
       {ctx?.inputs &&
         ctx?.inputs
           .filter((input) => input.target === props.id)
-          ?.map((input) => (
-            <Draggable>
+          ?.map((input, index) => (
+            <Draggable inputId={input.id} key={index}>
               <input
+                role="textbox"
                 type="text"
                 value={input.value}
                 id={input.id}
+                className="rounded-sm px-3 select-none"
+                placeholder="Type something..."
                 onChange={(e) =>
                   ctx.handleInputChange({
                     id: input.id,

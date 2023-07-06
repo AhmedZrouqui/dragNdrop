@@ -13,15 +13,17 @@ export default function useWindowSize(minWidth: number) {
   });
 
   useEffect(() => {
-    const onResize = () => {
+    const getWindowSize = () => {
       const currentWindowWidth = window.innerWidth;
       const isDesiredWidth = currentWindowWidth < minWidth;
       setState({ windowWidth: currentWindowWidth, isDesiredWidth });
     };
 
-    window.addEventListener('resize', onResize);
+    getWindowSize();
 
-    return () => window.removeEventListener('resize', onResize);
+    window.addEventListener('resize', getWindowSize);
+
+    return () => window.removeEventListener('resize', getWindowSize);
   }, [minWidth, state.windowWidth]);
 
   return state.isDesiredWidth;

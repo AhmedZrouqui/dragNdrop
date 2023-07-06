@@ -1,4 +1,4 @@
-export const ItemTypes = {
-  DROPPABLE: 'droppable',
-  DRAGGABLE: 'draggable',
-};
+export interface ITableType {
+  id: string;
+  value: string;
+}
