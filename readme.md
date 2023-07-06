@@ -1,7 +1,5 @@
 # Drag and Drop Test Project 🚀
 
-## [Live Preview](https://feat-addpreviewimage--scintillating-parfait-66f416.netlify.app/)
-
 
 ## [Live Preview](https://feat-addpreviewimage--scintillating-parfait-66f416.netlify.app/)
 
