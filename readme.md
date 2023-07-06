@@ -8,6 +8,16 @@ Just run `yarn install` or `npm install` and you're ready to go.
 
 `npm run dev` to launch application. (`--host` is already implemented, for network exposure).
 
+## Design
+
+I have made a minimal UI Design on Figma, accessible via this [Link](https://www.figma.com/file/sUHnXCQlkymi132bZVVhXD/Drag-N-Drop-UI?type=design&node-id=0-1&mode=design)
+
+## Note
+
+I have used [@use-gesture](https://use-gesture.netlify.app/) to build the drap and drop behavior. this library doesn't come with the whole pack included, but I got to do my own logic for the drop and drag of elements.
+
+I also used [react-spring](https://github.com/pmndrs/react-spring) to make some cool draging effects.
+
 ## What's done:
 
 - [x] Use React to create the application
