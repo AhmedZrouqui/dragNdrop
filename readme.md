@@ -1,5 +1,8 @@
 # Drag and Drop Test Project 🚀
 
+## [Live Preview](https://feat-addpreviewimage--scintillating-parfait-66f416.netlify.app/)
+
+
 This application has been created with vite + React `yarn create vite`
 
 ## Installation 
